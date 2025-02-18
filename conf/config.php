@@ -2,7 +2,7 @@
 	// configuration parameters
 
 	// for snoopy client
-	$httpUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36';
+	$httpUserAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0';
 	$httpTimeOut = 30;			// in seconds
 	$httpUseGzip = true;
 	$httpIP = null;				// IP string. Or null for any.
