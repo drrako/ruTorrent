@@ -11,6 +11,7 @@ theUILang.telegramEventResumed = "Возобновлён";
 theUILang.telegramEventFinished = "Завершён";
 theUILang.telegramEventRemoved = "Удалён";
 theUILang.telegramTest = "Отправить тестовое сообщение";
+theUILang.telegramTestHelp = "Перед тестированием сохраните настройки, нажав OK.";
 theUILang.telegramSaved = "Настройки Telegram сохранены.";
 theUILang.telegramSaveFailed = "Не удалось сохранить настройки Telegram.";
 theUILang.telegramTestSucceeded = "Тестовое сообщение Telegram отправлено.";

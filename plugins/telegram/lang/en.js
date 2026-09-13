@@ -11,6 +11,7 @@ theUILang.telegramEventResumed = "Resumed";
 theUILang.telegramEventFinished = "Finished";
 theUILang.telegramEventRemoved = "Removed";
 theUILang.telegramTest = "Send test message";
+theUILang.telegramTestHelp = "Save settings by clicking OK before testing.";
 theUILang.telegramSaved = "Telegram settings saved.";
 theUILang.telegramSaveFailed = "Telegram settings could not be saved.";
 theUILang.telegramTestSucceeded = "Telegram test message sent.";
