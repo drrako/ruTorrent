@@ -19,10 +19,10 @@ class rTelegram
 		'removed' => false,
 	);
 	public $templates = array(
-		'added' => "Torrent added:\n\n{TORRENT}\n\nHash: {HASH}",
-		'resumed' => "Torrent resumed:\n\n{TORRENT}\n\nHash: {HASH}",
-		'finished' => "Torrent finished: {TORRENT}{LINK}",
-		'removed' => "Torrent removed: {TORRENT}",
+		'added' => 'Torrent {STATE}: {TORRENT}{LINK}',
+		'resumed' => 'Torrent {STATE}: {TORRENT}{LINK}',
+		'finished' => 'Torrent {STATE}: {TORRENT}{LINK}',
+		'removed' => 'Torrent {STATE}: {TORRENT}{LINK}',
 	);
 
 	const MAX_TEMPLATE_LENGTH = 4096;
@@ -126,8 +126,7 @@ class rTelegram
 			$this->events[$event] = !empty($this->events[$event]);
 			if(!isset($this->templates[$event]) || !is_string($this->templates[$event]))
 				$this->templates[$event] = self::defaultTemplate($event);
-			else if(in_array($event, array('finished', 'removed'), true) &&
-				$this->templates[$event] === self::legacyDefaultTemplate($event))
+			else if($this->templates[$event] === self::legacyDefaultTemplate($event))
 				$this->templates[$event] = self::defaultTemplate($event);
 			$this->templates[$event] = self::truncateMessage($this->templates[$event]);
 		}
@@ -135,12 +134,7 @@ class rTelegram
 
 	public static function defaultTemplate($event)
 	{
-		if($event === 'finished')
-			return 'Torrent finished: {TORRENT}{LINK}';
-		if($event === 'removed')
-			return 'Torrent removed: {TORRENT}';
-		$label = ucfirst($event === 'resumed' ? 'resumed' : $event);
-		return "Torrent {$label}:\n\n{TORRENT}\n\nHash: {HASH}";
+		return 'Torrent {STATE}: {TORRENT}{LINK}';
 	}
 
 	private static function legacyDefaultTemplate($event)
@@ -149,7 +143,11 @@ class rTelegram
 			return "Torrent finished:\n\n{TORRENT}\n\nHash: {HASH}";
 		if($event === 'removed')
 			return "Torrent removed:\n\n{TORRENT}\n\nHash: {HASH}";
-		return self::defaultTemplate($event);
+		if($event === 'added')
+			return "Torrent added:\n\n{TORRENT}\n\nHash: {HASH}";
+		if($event === 'resumed')
+			return "Torrent resumed:\n\n{TORRENT}\n\nHash: {HASH}";
+		return '';
 	}
 
 	public function validationErrors($event = null)
@@ -178,10 +176,11 @@ class rTelegram
 	public function render($event, $torrent, $hash, $comment = '')
 	{
 		$template = isset($this->templates[$event]) ? $this->templates[$event] : self::defaultTemplate($event);
-		$state = ucfirst($event);
+		$state = $event;
+		$link = ($event === 'finished') ? self::markdownLink($comment) : '';
 		$message = str_replace(
 			array('{STATE}', '{TORRENT}', '{HASH}', '{LINK}'),
-			array($state, self::escapeMarkdown((string)$torrent), (string)$hash, self::markdownLink($comment)),
+			array($state, self::escapeMarkdown((string)$torrent), (string)$hash, $link),
 			$template
 		);
 		return self::truncateMessage($message);

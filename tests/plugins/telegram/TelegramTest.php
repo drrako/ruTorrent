@@ -28,16 +28,19 @@ class TelegramTest extends TestCase
 		$this->assertTrue($config->enabled, 'enabled is parsed');
 		$this->assertEquals('token', $config->token, 'token is trimmed');
 		$this->assertTrue($config->events['finished'], 'selected events are parsed');
-		$this->assertEquals('Finished|name "with" $danger|ABC', $config->render('finished', 'name "with" $danger', 'ABC'), 'placeholders are rendered as plain text');
+		$this->assertEquals('finished|name "with" $danger|ABC', $config->render('finished', 'name "with" $danger', 'ABC'), 'placeholders are rendered as plain text');
 		$this->assertTrue(!$config->events['added'], 'unchecked events stay disabled');
 	}
 
 	public function testDefaultMessagesMatchTheTelegramScript()
 	{
 		$config = new rTelegram();
+		$this->assertEquals('Torrent added: Movie', $config->render('added', 'Movie', 'ABC'), 'added default uses the common structure');
+		$this->assertEquals('Torrent resumed: Movie', $config->render('resumed', 'Movie', 'ABC'), 'resumed default uses the common structure');
 		$this->assertEquals('Torrent finished: Movie', $config->render('finished', 'Movie', 'ABC'), 'finished default matches the script');
 		$this->assertEquals("Torrent finished: Movie  \n[link](https://example.org/item)", $config->render('finished', 'Movie', 'ABC', 'VRS24mrkerhttps%3A%2F%2Fexample.org%2Fitem'), 'finished default adds a comment link');
 		$this->assertEquals('Torrent removed: Movie', $config->render('removed', 'Movie', 'ABC'), 'removed default matches the script');
+		$this->assertEquals('Torrent removed: Movie', $config->render('removed', 'Movie', 'ABC', 'VRS24mrkerhttps%3A%2F%2Fexample.org%2Fitem'), 'only finished messages add the script link');
 	}
 
 	public function testAnEmptyTokenPreservesTheExistingSecret()
