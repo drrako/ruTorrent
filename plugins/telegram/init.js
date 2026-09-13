@@ -94,7 +94,7 @@ plugin.onLangLoaded = function() {
 				$('<div>').addClass('col-12 col-md-3').append($('<label>').attr({for: 'telegram_token'}).text(theUILang.telegramBotToken)),
 				$('<div>').addClass('col-12 col-md-5').append(
 					$('<input>').attr({type: 'password', id: 'telegram_token', autocomplete: 'new-password', maxlength: 256}),
-					$('<small>').attr({id: 'telegram_token_status'}).addClass('form-text').css({color: 'var(--text-color, inherit)'})
+					$('<small>').attr({id: 'telegram_token_status'}).addClass('form-text').css({color: 'var(--text-color, inherit)', whiteSpace: 'nowrap'})
 				)
 			),
 			$('<div>').addClass('row').append(
