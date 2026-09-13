@@ -21,8 +21,8 @@ class rTelegram
 	public $templates = array(
 		'added' => "Torrent added:\n\n{TORRENT}\n\nHash: {HASH}",
 		'resumed' => "Torrent resumed:\n\n{TORRENT}\n\nHash: {HASH}",
-		'finished' => "Torrent finished:\n\n{TORRENT}\n\nHash: {HASH}",
-		'removed' => "Torrent removed:\n\n{TORRENT}\n\nHash: {HASH}",
+		'finished' => "Torrent finished: {TORRENT}{LINK}",
+		'removed' => "Torrent removed: {TORRENT}",
 	);
 
 	const MAX_TEMPLATE_LENGTH = 4096;
@@ -126,14 +126,30 @@ class rTelegram
 			$this->events[$event] = !empty($this->events[$event]);
 			if(!isset($this->templates[$event]) || !is_string($this->templates[$event]))
 				$this->templates[$event] = self::defaultTemplate($event);
+			else if(in_array($event, array('finished', 'removed'), true) &&
+				$this->templates[$event] === self::legacyDefaultTemplate($event))
+				$this->templates[$event] = self::defaultTemplate($event);
 			$this->templates[$event] = self::truncateMessage($this->templates[$event]);
 		}
 	}
 
 	public static function defaultTemplate($event)
 	{
+		if($event === 'finished')
+			return 'Torrent finished: {TORRENT}{LINK}';
+		if($event === 'removed')
+			return 'Torrent removed: {TORRENT}';
 		$label = ucfirst($event === 'resumed' ? 'resumed' : $event);
 		return "Torrent {$label}:\n\n{TORRENT}\n\nHash: {HASH}";
+	}
+
+	private static function legacyDefaultTemplate($event)
+	{
+		if($event === 'finished')
+			return "Torrent finished:\n\n{TORRENT}\n\nHash: {HASH}";
+		if($event === 'removed')
+			return "Torrent removed:\n\n{TORRENT}\n\nHash: {HASH}";
+		return self::defaultTemplate($event);
 	}
 
 	public function validationErrors($event = null)
@@ -159,16 +175,39 @@ class rTelegram
 		return $this->enabled && empty($this->validationErrors($event));
 	}
 
-	public function render($event, $torrent, $hash)
+	public function render($event, $torrent, $hash, $comment = '')
 	{
 		$template = isset($this->templates[$event]) ? $this->templates[$event] : self::defaultTemplate($event);
 		$state = ucfirst($event);
 		$message = str_replace(
-			array('{STATE}', '{TORRENT}', '{HASH}'),
-			array($state, (string)$torrent, (string)$hash),
+			array('{STATE}', '{TORRENT}', '{HASH}', '{LINK}'),
+			array($state, self::escapeMarkdown((string)$torrent), (string)$hash, self::markdownLink($comment)),
 			$template
 		);
 		return self::truncateMessage($message);
+	}
+
+	public static function decodeComment($comment)
+	{
+		$comment = (string)$comment;
+		$prefix = 'VRS24mrker';
+		if(strpos($comment, $prefix) === 0)
+			return rawurldecode(substr($comment, strlen($prefix)));
+		return '';
+	}
+
+	private static function markdownLink($comment)
+	{
+		$comment = self::decodeComment($comment);
+		if($comment === '' || !preg_match('`^https?://[^\s]+$`i', $comment))
+			return '';
+		$comment = str_replace(array('\\', ')'), array('\\\\', '\)'), $comment);
+		return "  \n[link]({$comment})";
+	}
+
+	private static function escapeMarkdown($value)
+	{
+		return str_replace(array('\\', '_', '*', '[', '`'), array('\\\\', '\_', '\*', '\[', '\`'), $value);
 	}
 
 	public static function truncateMessage($message)
@@ -241,7 +280,7 @@ class rTelegram
 		$script = '"$0" "$@" </dev/null >/dev/null 2>&1 &';
 		return getCmd('execute.nothrow').'={sh,-c,'.$quote($script).','.
 			$quote(Utility::getPHP()).','.$quote($path.'/notify.php').','.
-			$quote($event).',"$'.getCmd('d.name').'=","$'.getCmd('d.get_hash').'=",'.$quote(User::getUser()).'}';
+			$quote($event).',"$'.getCmd('d.name').'=","$'.getCmd('d.get_hash').'=","$'.getCmd('d.get_custom2').'=",'.$quote(User::getUser()).'}';
 	}
 
 	public static function sanitizeError($message, $token = '')
@@ -274,11 +313,13 @@ class rTelegramClient
 		$this->transport = $transport;
 	}
 
-	public function send($token, $chatId, $message)
+	public function send($token, $chatId, $message, $parseMode = null)
 	{
 		$message = rTelegram::truncateMessage($message);
 		$url = 'https://api.telegram.org/bot'.$token.'/sendMessage';
 		$payload = array('chat_id' => $chatId, 'text' => $message);
+		if($parseMode !== null && $parseMode !== '')
+			$payload['parse_mode'] = $parseMode;
 		$options = array('connect_timeout' => 5, 'timeout' => 10);
 		if(is_callable($this->transport))
 		{

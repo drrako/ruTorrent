@@ -8,8 +8,9 @@ if(!chdir(dirname(__FILE__)))
 $event = isset($argv[1]) ? $argv[1] : '';
 $torrent = isset($argv[2]) ? $argv[2] : '';
 $hash = isset($argv[3]) ? $argv[3] : '';
-if(isset($argv[4]))
-	$_SERVER['REMOTE_USER'] = $argv[4];
+$comment = isset($argv[4]) ? $argv[4] : '';
+if(isset($argv[5]))
+	$_SERVER['REMOTE_USER'] = $argv[5];
 
 require_once(dirname(__FILE__).'/telegram.php');
 
@@ -17,9 +18,9 @@ $config = rTelegram::load();
 if(!$config->canNotify($event))
 	exit(0);
 
-$message = $config->render($event, $torrent, $hash);
+$message = $config->render($event, $torrent, $hash, $comment);
 $client = new rTelegramClient();
-$result = $client->send($config->token, $config->chatId, $message);
+$result = $client->send($config->token, $config->chatId, $message, 'Markdown');
 if(empty($result['ok']))
 {
 	$error = isset($result['error']) ? $result['error'] : 'Telegram request failed';

@@ -38,7 +38,7 @@ if($action === 'testtelegram' || $action === 'test')
 		exit;
 	}
 	$message = $config->render('finished', 'Telegram test message', 'test');
-	$result = (new rTelegramClient())->send($config->token, $config->chatId, $message);
+	$result = (new rTelegramClient())->send($config->token, $config->chatId, $message, 'Markdown');
 	if(empty($result['ok']))
 		$result = array('ok' => false, 'error' => isset($result['error']) ? rTelegram::sanitizeError($result['error'], $config->token) : 'Telegram request failed');
 	else

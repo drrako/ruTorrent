@@ -32,6 +32,14 @@ class TelegramTest extends TestCase
 		$this->assertTrue(!$config->events['added'], 'unchecked events stay disabled');
 	}
 
+	public function testDefaultMessagesMatchTheTelegramScript()
+	{
+		$config = new rTelegram();
+		$this->assertEquals('Torrent finished: Movie', $config->render('finished', 'Movie', 'ABC'), 'finished default matches the script');
+		$this->assertEquals("Torrent finished: Movie  \n[link](https://example.org/item)", $config->render('finished', 'Movie', 'ABC', 'VRS24mrkerhttps%3A%2F%2Fexample.org%2Fitem'), 'finished default adds a comment link');
+		$this->assertEquals('Torrent removed: Movie', $config->render('removed', 'Movie', 'ABC'), 'removed default matches the script');
+	}
+
 	public function testAnEmptyTokenPreservesTheExistingSecret()
 	{
 		$config = new rTelegram();
@@ -93,5 +101,6 @@ class TelegramTest extends TestCase
 		$this->assertTrue(strpos($command, 'execute.nothrow') !== false, 'notifications use execute.nothrow');
 		$this->assertTrue(strpos($command, '\\$@') !== false, 'torrent data is passed through shell positional arguments');
 		$this->assertTrue(strpos($command, 'notify.php') !== false, 'the background command launches notify.php');
+		$this->assertTrue(strpos($command, 'd.get_custom2') !== false, 'the background command passes the stored torrent comment');
 	}
 }
