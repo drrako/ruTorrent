@@ -103,7 +103,7 @@ plugin.onLangLoaded = function() {
 			),
 			$('<div>').addClass('row').append(
 				$('<div>').addClass('col-12').append(
-					$('<button>').attr({type: 'button'}).addClass('OK').css({width: 'max-content', minWidth: '180px', whiteSpace: 'nowrap', opacity: 1, filter: 'none', cursor: 'pointer', fontWeight: 'bold'}).on('click', () => { plugin.testTelegram(); return false; }).text(theUILang.telegramTest),
+					$('<button>').attr({type: 'button'}).addClass('OK').css({width: 'max-content', minWidth: '180px', whiteSpace: 'nowrap', opacity: 1, filter: 'none', cursor: 'pointer'}).on('click', () => { plugin.testTelegram(); return false; }).text(theUILang.telegramTest),
 					$('<small>').addClass('form-text').css({color: 'var(--text-color, inherit)'}).text(theUILang.telegramTestHelp)
 				)
 			)
